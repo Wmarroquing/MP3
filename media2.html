@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="media.css"> -->
+    <title>Reproductor de musica</title>
+    <style>
+    /* .audio-player {
+        border: 1px solid lighten(#acacac, 20%);
+        text-align: center;
+        display: flex;
+        flex-flow: row;
+        margin: 4rem 0 4rem 0;
+        width: 600px;
+    } */
+        
+    /* .album-image {
+        min-height: 100px;
+        width: 100px;
+        background-size: cover;
+    } */
+        
+        /* .player-controls {
+            align-items: center;
+            justify-content: center;
+            margin-top: 2.5rem;
+            flex: 3;
+        } */
+            progress {
+            width: 90%;
+            }
+            
+            progress[value] {
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: white;
+            color: blue;
+            height: 5px;
+            }
+            
+            progress[value]::-webkit-progress-bar {
+            background-color: white;
+            border-radius: 2px;
+            border: 1px solid lighten(#acacac, 20%);
+            color: blue;
+            }
+            
+            progress::-webkit-progress-value {
+            background-color: blue;
+            }
+            
+            /* p {
+            font-size: 1.6rem;
+            } */
+
+        
+        /* #play-btn {
+            background-image: url('http://imgur.com/JzQP8td.png');
+            background-size: cover;
+            width: 75px;
+            height: 75px;
+            margin: 2rem 0 2rem 2rem;
+            &.pause {
+            background-image: url('http://imgur.com/MbJn41l.png');
+            }
+        } */
+   
+    </style>
+</head>
+<body class="bg-dark">
+
+    <div class="container my-5">
+        <h1 class="text-danger">Simple reproductor de musica</h1>
+        <hr class="bg-light">
+        <div class="card" style="max-width: 300px;">
+            <div class="audio-wrapper" id="player-container" href="javascript:;">
+                <audio id="player" ontimeupdate="initProgressBar()">
+                    <source src="Anyway.mp3" type="audio/mp3">
+                </audio>
+            </div>
+            <img src="https://media.istockphoto.com/vectors/vector-cd-or-dvd-icon-vector-id871971702?k=6&m=871971702&s=612x612&w=0&h=vXuoOAnfwQWmNZsNgbaznFTYPZf5Rm8XOEjoIJXA15I=" alt="" class="card-img">
+            <small id="start-time"></small>
+            <div id="seek-obj-container" style="width: 100%">
+                <progress class="progress" id="seek-obj" value="0" max="1"></progress>
+            </div>
+            <small id="end-time"></small>
+            <div id="play-btn">
+                <i class="far fa-pause-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <!-- <script src="media.js"></script> -->
+    <script>
+        function initProgressBar() {
+            var player = document.getElementById('player');
+            var length = player.duration
+            var current_time = player.currentTime;
+
+            // calculate total length of value
+            var totalLength = calculateTotalValue(length)
+            document.getElementById("end-time").innerHTML = totalLength;
+
+            // calculate current value time
+            var currentTime = calculateCurrentValue(current_time);
+            document.getElementById("start-time").innerHTML = currentTime;
+
+            var progressbar = document.getElementById('seek-obj');
+            progressbar.value = (player.currentTime / player.duration);
+            progressbar.addEventListener("click", seek);
+
+            if (player.currentTime == player.duration) {
+                document.getElementById('play-btn').className = "";
+            }
+
+            function seek(event) {
+                var percent = event.offsetX / this.offsetWidth;
+                player.currentTime = percent * player.duration;
+                progressbar.value = percent / 100;
+            }
+        };
+
+        function initPlayers(num) {
+            // pass num in if there are multiple audio players e.g 'player' + i
+
+            for (var i = 0; i < num; i++) {
+                (function () {
+
+                    // Variables
+                    // ----------------------------------------------------------
+                    // audio embed object
+                    var playerContainer = document.getElementById('player-container'),
+                        player = document.getElementById('player'),
+                        isPlaying = false,
+                        playBtn = document.getElementById('play-btn');
+
+                    // Controls Listeners
+                    // ----------------------------------------------------------
+                    if (playBtn != null) {
+                        playBtn.addEventListener('click', function () {
+                            togglePlay()
+                        });
+                    }
+
+                    // Controls & Sounds Methods
+                    // ----------------------------------------------------------
+                    function togglePlay() {
+                        if (player.paused === false) {
+                            player.pause();
+                            isPlaying = false;
+                            document.getElementById('play-btn').className = "";
+
+                        } else {
+                            player.play();
+                            document.getElementById('play-btn').className = "pause";
+                            isPlaying = true;
+                        }
+                    }
+                }());
+            }
+        }
+
+        function calculateTotalValue(length) {
+            var minutes = Math.floor(length / 60),
+                seconds_int = length - minutes * 60,
+                seconds_str = seconds_int.toString(),
+                seconds = seconds_str.substr(0, 2),
+                time = minutes + ':' + seconds
+
+            return time;
+        }
+
+        function calculateCurrentValue(currentTime) {
+            var current_hour = parseInt(currentTime / 3600) % 24,
+                current_minute = parseInt(currentTime / 60) % 60,
+                current_seconds_long = currentTime % 60,
+                current_seconds = current_seconds_long.toFixed(),
+                current_time = (current_minute < 10 ? "0" + current_minute : current_minute) + ":" + (current_seconds < 10 ? "0" + current_seconds : current_seconds);
+
+            return current_time;
+        }
+
+        initPlayers(jQuery('#player-container').length);
+    </script>
+</body>
+</html>
